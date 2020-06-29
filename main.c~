@@ -1,0 +1,137 @@
+#include <stdlib.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
+
+#include "window.h"
+
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
+
+int main(int argc, char *argv[])
+{
+
+    /* -- VARIABLES DE FENETRE -- */
+    SDL_Window *win = NULL;
+    SDL_Renderer *ren = NULL;
+    SDL_Surface *sLink = NULL;
+    SDL_Texture *tLink = NULL;
+    SDL_Surface *sLogo = NULL;
+    SDL_Texture *tLogo = NULL;
+    
+    
+    
+    /* -- AUTRES VARIABLES -- */
+    int loop = 1;
+    SDL_Event event;
+
+    // Cree la fenetre et le rendu
+    if(initWindow(&win, &ren) != 0)
+        QuitError("Fenetre et rendu non crees");
+
+    // Creation de l'image et de sa texture
+    //tLink = loadIMG("./images/Menu_16bit.png", &sLink, &tLink, &win, &ren);
+    tLink=loadIMG("./images/Menu_16bit.png", &sLink, &tLink, &win, &ren);
+
+    SDL_Rect hbLink;
+    if(SDL_QueryTexture(tLink, NULL, NULL, &hbLink.w, &hbLink.h) != 0)
+        QuitErrorWR("Hitbox non creee", &win ,&ren);
+    hbLink.x = 0;
+    hbLink.y = 0;
+    hbLink.w = SCREEN_WIDTH;
+    hbLink.h = SCREEN_HEIGHT;
+    
+    // Creation de l'image et de sa texture
+    tLogo = loadIMG("./images/logo.png", &sLogo, &tLogo, &win, &ren);
+    SDL_Rect hbLogo;
+    if(SDL_QueryTexture(tLogo, NULL, NULL, &hbLogo.w, &hbLogo.h) != 0)
+        QuitErrorWR("Hitbox non creee", &win ,&ren);
+    hbLogo.x = 600;
+    hbLogo.y = 80;
+    hbLogo.w /= 1.3;
+    hbLogo.h /= 1.3;
+    
+    // RECTANGLE MENU
+    SDL_Rect r;
+     r.x = 0;
+     r.y = 0;
+     r.w = 300;
+     r.h = SCREEN_HEIGHT;
+    SDL_SetRenderDrawBlendMode(ren,SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor( ren, 0, 0, 0, 128 );
+    
+    
+    /* Perso principal */
+    SDL_Surface *sPerso = NULL;
+    SDL_Texture *tPerso = NULL;
+    
+    
+    tPerso = loadIMG("./images/perso.png", &sPerso, &tPerso, &win, &ren);
+    
+    SDL_Rect hbPerso;
+
+    if(SDL_QueryTexture(tPerso, NULL, NULL, &hbPerso.w, &hbPerso.h) != 0)
+        QuitErrorWR("Hitbox non creee", &win ,&ren);
+    
+     hbPerso.x = SCREEN_WIDTH/2 - (hbPerso.w/2);
+     hbPerso.y = SCREEN_HEIGHT/2 - (hbPerso.h/2);
+     hbPerso.w *= 0.4;
+     hbPerso.h *= 0.4;
+
+    // Boucle principale du jeu
+    while(loop)
+    {
+        // Lancement de la lecture
+        SDL_PauseAudio(0);
+
+        // Place l'image sur la fenÍtre
+        SDL_RenderCopy(ren, tLink, NULL, &hbLink);
+        SDL_RenderCopy(ren, tLogo, NULL, &hbLogo);
+        SDL_RenderCopy(ren, tPerso, NULL, &hbPerso);
+        //Render rect
+        SDL_RenderFillRect( ren, &r );
+        SDL_RenderPresent(ren);
+
+        while(SDL_PollEvent(&event))
+        {
+            switch(event.type)
+            {
+                case SDL_KEYDOWN:
+                {
+                    switch(event.key.keysym.sym)
+                    {
+                        case SDLK_RIGHT:
+                            hbPerso.x+=4;
+                            break;
+                        case SDLK_LEFT:
+                            hbPerso.x-=4;
+                            break;
+                        case SDLK_UP:
+                            hbPerso.y-=4;
+                            break;
+                        case SDLK_DOWN:
+                            hbPerso.y+=4;
+                            break;
+                        default:
+                            break;
+                    }break;
+                }
+                case SDL_QUIT:
+                    loop = 0;
+                    SDL_CloseAudio();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+
+
+    }
+
+    freeMem(&win, &ren);
+    return 0;
+}
+
